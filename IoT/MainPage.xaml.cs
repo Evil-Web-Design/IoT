@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SQLite.Net.Attributes;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,21 +23,41 @@ namespace IoT
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        string path;
+        SQLite.Net.SQLiteConnection conn;
+
         public MainPage()
         {
-            InitializeComponent();
+            this.InitializeComponent();
+            path = Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "db.sqlite");
+            conn = new SQLite.Net.SQLiteConnection(new SQLite.Net.Platform.WinRT.SQLitePlatformWinRT(), path);
+            conn.CreateTable<Message>();
+
+
         }
-        private void ClickMe_Click(object sender, RoutedEventArgs e)
+
+        private void Retrieve_Click(object sender, RoutedEventArgs e)
         {
+            var query = conn.Table<Message>();
 
-            HelloMessage.Text = "Hello, Windows IoT Core!";
+            string text = "";
+            foreach (var message in query)
+            {
+                text = text + " " + message.Content + "; ";
+            }
+            textBlock.Text = text;
         }
-        //----------------------------------
+
+        private void Add_Click(object sender, RoutedEventArgs e)
+        {
+            var s = conn.Insert(new Message()
+            {
+                Content = textBox.Text
+            });
 
 
-
-
-
-
+        }
     }
+
+
 }
